@@ -102,21 +102,21 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
             // We're getting an offer, so we answer to it
             if (signal.sdpOffer) {
-                console.log("[INFO] Got a SDP offer from remote peer")
+                //console.log("[INFO] Got a SDP offer from remote peer")
                 setupAnswerPeer(signal.sdpOffer) //configure remote peer and create an answer offer
             }
             else if (signal.sdpAnswer) {
-                console.log("[INFO] Got a SDP answer from remote peer")
+                //console.log("[INFO] Got a SDP answer from remote peer")
                 //Add remote peer configuration
                 peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
             }
             else if (signal.candidate) {
-                console.log("[INFO] Received ICECandidate from remote peer.")
+                //console.log("[INFO] Received ICECandidate from remote peer.")
                 //Add remote peer configuration options to try to connect
                 peerConnection.addIceCandidate(new wrtc.RTCIceCandidate(signal.candidate))
             }
             else if (signal.closeConnection) {
-                console.log("[INFO] Received 'close' signal from remote peer.")
+                //console.log("[INFO] Received 'close' signal from remote peer.")
                 peerConnection.close()
             }
         }
