@@ -276,6 +276,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         */
         function onConnectionClosed() {
             //console.log('[INFO] Connection Closed')
+            datachannel = undefined
         }
     }
 }
