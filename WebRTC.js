@@ -15,13 +15,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     const wrtc = require('wrtc')
     const signalingChannel = new ws('ws://161.35.152.3:9456')
     let peerConnectionCfg = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:global.stun.twilio.com:3478?transport=udp' }], sdpSemantics: 'unified-plan' }
-    
+
     let peerConnection
     let datachannel
     let receivingFile
     let fileBuffer
-    let receivingMultipleMessages 
-    let multipleMessagesArray 
+    let receivingMultipleMessages
+    let multipleMessagesArray
     let callbackFunction
 
     return thisObject
@@ -33,14 +33,23 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         return new Promise(promiseWork)
 
         function promiseWork(resolve, reject) {
-
+            let gotResponse = false
             if (datachannel !== undefined) {
                 callbackFunction = onMenssageReceived
+                setTimeout(onTimeout, 10000)
                 datachannel.send(message)
                 function onMenssageReceived(message) {
                     callbackFunction = undefined
+                    gotResponse = true
                     resolve(message)
                 }
+                function onTimeout() {
+                    if (gotResponse === false) {
+                        reject('Test Server Disconnected.')
+                        thisObject.initialize()
+                    }
+                }
+
             } else {
                 reject('Test Server Not Available.')
             }
@@ -86,7 +95,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
     function initialize() {
 
-        peerConnection = undefined 
+        peerConnection = undefined
         datachannel = undefined
         receivingFile = 'No'
         fileBuffer = undefined
@@ -289,7 +298,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         Data Channel being Closed.
         */
         function onConnectionClosed() {
-            //console.log('[INFO] Connection Closed')
+            console.log('[INFO] WebRTC Connection Closed')
             thisObject.initialize()
         }
     }
