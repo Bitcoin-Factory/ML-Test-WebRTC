@@ -15,11 +15,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     const wrtc = require('wrtc')
     const signalingChannel = new ws('ws://161.35.152.3:9456')
     let peerConnectionCfg = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:global.stun.twilio.com:3478?transport=udp' }], sdpSemantics: 'unified-plan' }
-    let peerConnection, datachannel
-    let receivingFile = 'No'
+    
+    let peerConnection
+    let datachannel
+    let receivingFile
     let fileBuffer
-    let receivingMultipleMessages = 'No'
-    let multipleMessagesArray = []
+    let receivingMultipleMessages 
+    let multipleMessagesArray 
     let callbackFunction
 
     return thisObject
@@ -79,6 +81,14 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     }
 
     function initialize() {
+
+        peerConnection = undefined 
+        datachannel = undefined
+        receivingFile = 'No'
+        fileBuffer = undefined
+        receivingMultipleMessages = 'No'
+        multipleMessagesArray = []
+        callbackFunction = undefined
 
         signalingChannel.channel = 'superalgos-default' //channel like peer chat rooms
 
@@ -276,7 +286,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         */
         function onConnectionClosed() {
             //console.log('[INFO] Connection Closed')
-            datachannel = undefined
+            thisObject.initialize()
         }
     }
 }
