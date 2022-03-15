@@ -34,11 +34,15 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
         function promiseWork(resolve, reject) {
 
-            callbackFunction = onMenssageReceived
-            datachannel.send(message)
-            function onMenssageReceived(message) {
-                callbackFunction = undefined
-                resolve(message)
+            if (datachannel !== undefined) {
+                callbackFunction = onMenssageReceived
+                datachannel.send(message)
+                function onMenssageReceived(message) {
+                    callbackFunction = undefined
+                    resolve(message)
+                }
+            } else {
+                reject('Test Server Not Available.')
             }
         }
     }
