@@ -80,20 +80,16 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         }
     }
 
-    function getNextMessage() {
-        return new Promise(promiseWork)
+    function getNextMessage(serverCallbackFunction) {
 
-        function promiseWork(resolve, reject) {
-
-            callbackFunction = onMenssageReceived
-            function onMenssageReceived(message) {
-                callbackFunction = undefined
-                resolve(message)
-            }
+        callbackFunction = onMenssageReceived
+        function onMenssageReceived(message) {
+            callbackFunction = undefined
+            serverCallbackFunction(message)
         }
     }
 
-    function initialize() {
+    function initialize(channelName) {
 
         peerConnection = undefined
         datachannel = undefined
@@ -103,7 +99,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         multipleMessagesArray = []
         callbackFunction = undefined
 
-        signalingChannel.channel = 'superalgos-default' //channel like peer chat rooms
+        signalingChannel.channel = channelName //channel like peer chat rooms
 
         signalingChannel.onmessage = (msg) => {
             let signal = JSON.parse(msg.data)
@@ -167,7 +163,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             peerConnection = new wrtc.RTCPeerConnection(peerConnectionCfg)
 
             //Since we are initiating a connection, create the data channel
-            datachannel = peerConnection.createDataChannel('myChannel')
+            datachannel = peerConnection.createDataChannel(channelName)
 
             datachannel.onclose = onConnectionClosed
             datachannel.onmessage = onMenssage
