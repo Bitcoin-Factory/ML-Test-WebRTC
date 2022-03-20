@@ -4,6 +4,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     This modules bring enables the communication between Test Clients and the Test Server.
     */
     let thisObject = {
+        channelName: undefined,
         sendMessage: sendMessage,
         sendFile: sendFile,
         sendResponse: sendResponse,
@@ -81,15 +82,11 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     }
 
     function getNextMessage(serverCallbackFunction) {
-
-        callbackFunction = onMenssageReceived
-        function onMenssageReceived(message) {
-            callbackFunction = undefined
-            serverCallbackFunction(message)
-        }
+        callbackFunction = serverCallbackFunction
     }
 
     function initialize(channelName) {
+        thisObject.channelName = channelName
 
         peerConnection = undefined
         datachannel = undefined
@@ -99,7 +96,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         multipleMessagesArray = []
         callbackFunction = undefined
 
-        signalingChannel.channel = channelName //channel like peer chat rooms
+        signalingChannel.channel = thisObject.channelName //channel like peer chat rooms
 
         signalingChannel.onmessage = (msg) => {
             let signal = JSON.parse(msg.data)
@@ -163,7 +160,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             peerConnection = new wrtc.RTCPeerConnection(peerConnectionCfg)
 
             //Since we are initiating a connection, create the data channel
-            datachannel = peerConnection.createDataChannel(channelName)
+            datachannel = peerConnection.createDataChannel(thisObject.channelName)
 
             datachannel.onclose = onConnectionClosed
             datachannel.onmessage = onMenssage
