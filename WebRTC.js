@@ -47,7 +47,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 function onTimeout() {
                     if (gotResponse === false) {
                         reject('Test Server Disconnected.')
-                        thisObject.initialize()
+                        thisObject.initialize(thisObject.channelName)
                     }
                 }
 
@@ -292,7 +292,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         */
         function onConnectionClosed() {
             console.log('[INFO] WebRTC Connection Closed')
-            thisObject.initialize()
+            thisObject.initialize(thisObject.channelName)
         }
     }
 }
