@@ -53,6 +53,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
             } else {
                 reject('Test Server Not Available.')
+                thisObject.initialize(thisObject.channelName)
             }
         }
     }
