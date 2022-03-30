@@ -16,6 +16,9 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     const ws = require('ws')
     const wrtc = require('wrtc')
 
+    const signalingChannel = new ws('ws://161.35.152.3:9456')
+    let peerConnectionCfg = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:global.stun.twilio.com:3478?transport=udp' }], sdpSemantics: 'unified-plan' }
+
     let peerConnection
     let datachannel
     let receivingFile
@@ -23,6 +26,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     let receivingMultipleMessages
     let multipleMessagesArray
     let callbackFunction
+    let lastReset
 
     return thisObject
 
@@ -45,9 +49,9 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 }
                 function onTimeout() {
                     if (gotResponse === false) {
-                        reject('Test Server Disconnected.')
+                        reject('Test Server Timeout.')
                         console.log((new Date()).toISOString(), 'WebRTC Message Timeout. Resetting Connection.')
-                        thisObject.reset(true)
+                        //thisObject.reset(true)
                     }
                 }
 
@@ -92,20 +96,23 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         When the connection is lost, a timeout happens, etc,
         this method will be executed.
         */
-        if (tellRemoteParty === true && datachannel !== undefined) {
-            datachannel.send('RESETTING')
-            console.log((new Date()).toISOString(), 'WebRTC telling remote peer to Reset itself.')
-        }
+        /*
+         if (tellRemoteParty === true && datachannel !== undefined) {
+             datachannel.send('RESETTING')
+             console.log((new Date()).toISOString(), 'WebRTC telling remote peer to Reset itself.')
+         }
+         */
         console.log((new Date()).toISOString(), 'WebRTC resetting my own connection.')
+
+        //let timestamp = (new Date()).valueOf()
+        //if (lastReset === undefined || (timestamp - lastReset) > 10 * 1000)
         thisObject.initialize(thisObject.channelName)
+        //lastReset = timestamp
     }
 
 
     function initialize(channelName) {
 
-        const signalingChannel = new ws('ws://161.35.152.3:9456')
-        let peerConnectionCfg = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:global.stun.twilio.com:3478?transport=udp' }], sdpSemantics: 'unified-plan' }
-        
         thisObject.channelName = channelName
 
         peerConnection = undefined
@@ -260,7 +267,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                         console.log((new Date()).toISOString(), 'WebRTC remote peer told me to Reset myself. Resetting Connection.')
                         thisObject.reset(false)
                         break
-                    }                    
+                    }
                     case 'SENDING MULTIPLE MESSAGES': {
                         receivingMultipleMessages = 'Yes'
                         break
