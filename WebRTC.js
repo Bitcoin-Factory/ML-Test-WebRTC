@@ -26,7 +26,6 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     let receivingMultipleMessages
     let multipleMessagesArray
     let callbackFunction
-    let lastReset
 
     return thisObject
 
@@ -50,15 +49,14 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 function onTimeout() {
                     if (gotResponse === false) {
                         reject('Test Server Timeout.')
-                        console.log((new Date()).toISOString(), 'WebRTC Message Timeout. Resetting Connection.')
-                        //thisObject.reset(true)
+                        console.log((new Date()).toISOString(), 'WebRTC Message Timeout.')
                     }
                 }
 
             } else {
                 reject('Test Server Not Available.')
                 console.log((new Date()).toISOString(), 'WebRTC with no Data Channel. Resetting Connection.')
-                thisObject.reset(true)
+                thisObject.reset()
             }
         }
     }
@@ -91,23 +89,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         callbackFunction = serverCallbackFunction
     }
 
-    function reset(tellRemoteParty) {
+    function reset() {
         /*
         When the connection is lost, a timeout happens, etc,
         this method will be executed.
         */
-        /*
-         if (tellRemoteParty === true && datachannel !== undefined) {
-             datachannel.send('RESETTING')
-             console.log((new Date()).toISOString(), 'WebRTC telling remote peer to Reset itself.')
-         }
-         */
-        console.log((new Date()).toISOString(), 'WebRTC resetting my own connection.')
-
-        //let timestamp = (new Date()).valueOf()
-        //if (lastReset === undefined || (timestamp - lastReset) > 10 * 1000)
+        console.log((new Date()).toISOString(), 'WebRTC the connection.')
         thisObject.initialize(thisObject.channelName)
-        //lastReset = timestamp
     }
 
 
@@ -263,11 +251,6 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             } else {
 
                 switch (message.data) {
-                    case 'RESETTING': {
-                        console.log((new Date()).toISOString(), 'WebRTC remote peer told me to Reset myself. Resetting Connection.')
-                        thisObject.reset(false)
-                        break
-                    }
                     case 'SENDING MULTIPLE MESSAGES': {
                         receivingMultipleMessages = 'Yes'
                         break
@@ -324,7 +307,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         */
         function onConnectionClosed() {
             console.log((new Date()).toISOString(), 'WebRTC Connection Lost. Resetting Connection.')
-            thisObject.reset(true)
+            thisObject.reset()
         }
     }
 }
