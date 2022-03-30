@@ -15,8 +15,6 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     }
     const ws = require('ws')
     const wrtc = require('wrtc')
-    const signalingChannel = new ws('ws://161.35.152.3:9456')
-    let peerConnectionCfg = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:global.stun.twilio.com:3478?transport=udp' }], sdpSemantics: 'unified-plan' }
 
     let peerConnection
     let datachannel
@@ -105,6 +103,9 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
     function initialize(channelName) {
 
+        const signalingChannel = new ws('ws://161.35.152.3:9456')
+        let peerConnectionCfg = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:global.stun.twilio.com:3478?transport=udp' }], sdpSemantics: 'unified-plan' }
+        
         thisObject.channelName = channelName
 
         peerConnection = undefined
