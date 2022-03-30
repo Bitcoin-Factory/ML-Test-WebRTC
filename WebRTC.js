@@ -48,12 +48,14 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 function onTimeout() {
                     if (gotResponse === false) {
                         reject('Test Server Disconnected.')
+                        console.log((new Date()).toISOString(), 'WebRTC Message Timeout. Resetting Connection.')
                         thisObject.reset(true)
                     }
                 }
 
             } else {
                 reject('Test Server Not Available.')
+                console.log((new Date()).toISOString(), 'WebRTC with no Data Channel. Resetting Connection.')
                 thisObject.reset(true)
             }
         }
@@ -95,7 +97,8 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         console.log('RESETTING')
         if (tellRemoteParty === true) {
             datachannel.send('RESETTING')
-            console.log('SENDING RESETTING')
+            console.log((new Date()).toISOString(), 'WebRTC telling remote peer to Reset itself.')
+
         }
         thisObject.initialize(thisObject.channelName)
     }
@@ -254,6 +257,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
                 switch (message.data) {
                     case 'RESETTING': {
+                        console.log((new Date()).toISOString(), 'WebRTC remote peer told me to Reset myself. Resetting Connection.')
                         thisObject.reset(false)
                         break
                     }                    
@@ -312,7 +316,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         Data Channel being Closed.
         */
         function onConnectionClosed() {
-            console.log('[INFO] WebRTC Connection Closed')
+            console.log((new Date()).toISOString(), 'WebRTC Connection Lost. Resetting Connection.')
             thisObject.reset(true)
         }
     }
