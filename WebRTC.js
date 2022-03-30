@@ -9,6 +9,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         sendFile: sendFile,
         sendResponse: sendResponse,
         getNextMessage: getNextMessage,
+        reset: reset,
         initialize: initialize,
         finalize: finalize
     }
@@ -47,13 +48,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 function onTimeout() {
                     if (gotResponse === false) {
                         reject('Test Server Disconnected.')
-                        thisObject.initialize(thisObject.channelName)
+                        thisObject.reset(true)
                     }
                 }
 
             } else {
                 reject('Test Server Not Available.')
-                thisObject.initialize(thisObject.channelName)
+                thisObject.reset(true)
             }
         }
     }
@@ -86,7 +87,22 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         callbackFunction = serverCallbackFunction
     }
 
+    function reset(tellRemoteParty) {
+        /*
+        When the connection is lost, a timeout happens, etc,
+        this method will be executed.
+        */
+        console.log('RESETTING')
+        if (tellRemoteParty === true) {
+            datachannel.send('RESETTING')
+            console.log('SENDING RESETTING')
+        }
+        thisObject.initialize(thisObject.channelName)
+    }
+
+
     function initialize(channelName) {
+
         thisObject.channelName = channelName
 
         peerConnection = undefined
@@ -237,6 +253,10 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             } else {
 
                 switch (message.data) {
+                    case 'RESETTING': {
+                        thisObject.reset(false)
+                        break
+                    }                    
                     case 'SENDING MULTIPLE MESSAGES': {
                         receivingMultipleMessages = 'Yes'
                         break
@@ -293,7 +313,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         */
         function onConnectionClosed() {
             console.log('[INFO] WebRTC Connection Closed')
-            thisObject.initialize(thisObject.channelName)
+            thisObject.reset(true)
         }
     }
 }
