@@ -94,12 +94,11 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         When the connection is lost, a timeout happens, etc,
         this method will be executed.
         */
-        console.log('RESETTING')
-        if (tellRemoteParty === true) {
+        if (tellRemoteParty === true && datachannel !== undefined) {
             datachannel.send('RESETTING')
             console.log((new Date()).toISOString(), 'WebRTC telling remote peer to Reset itself.')
-
         }
+        console.log((new Date()).toISOString(), 'WebRTC resetting my own connection.')
         thisObject.initialize(thisObject.channelName)
     }
 
