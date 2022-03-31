@@ -179,18 +179,18 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
             datachannel.onclose = onConnectionClosed
             datachannel.onmessage = onMenssage
-            //console.log('[INFO] Channel Created by Initiator')
+            //console.log((new Date()).toISOString(), '[INFO] Channel Created by Initiator')
 
             peerConnection.onicecandidate = (msg) => {
                 // send any ice candidates to the other peer, i.e., msg.candidate
-                //console.log('[INFO] Sending ICE candidates')
+                //console.log((new Date()).toISOString(), '[INFO] Sending ICE candidates')
                 if (!msg || !msg.candidate) { return }
                 signalingChannel.send({
                     candidate: msg.candidate
                 })
             }
             //Here we create the configuration parameters to present to anyone who wants to connect to us
-            //console.log('[INFO] creating offer')
+            //console.log((new Date()).toISOString(), '[INFO] creating offer')
             peerConnection.createOffer((offer) => {
                 peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(offer), () => {
                     // send the offer to a server to be forwarded to the other peer
@@ -207,7 +207,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
             peerConnection.onicecandidate = (msg) => {
                 // send any ice candidates to the other peer, i.e., msg.candidate
-                //console.log('[INFO] Sending ICE candidates')
+                //console.log((new Date()).toISOString(), '[INFO] Sending ICE candidates')
                 if (!msg || !msg.candidate) { return }
                 signalingChannel.send({
                     candidate: msg.candidate
@@ -215,12 +215,12 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             }
             //Since we have received an offer from a peer, we configure the new peer with that config...
             peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(offer))
-            //console.log('[INFO] creating answer')
+            //console.log((new Date()).toISOString(), '[INFO] creating answer')
             //.. And send our configuration to the offering peer
             peerConnection.createAnswer((answer) => {
                 peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(answer), () => {
                     // send the offer to a server to be forwarded to the other peer
-                    //console.log('[INFO] Sending Answer')
+                    //console.log((new Date()).toISOString(), '[INFO] Sending Answer')
                     signalingChannel.send({
                         sdpAnswer: answer
                     })
@@ -228,15 +228,15 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             }, (error) => { console.log(error) })
 
             peerConnection.ondatachannel = evt => {
-                //console.log('[INFO] Event Received: ' + JSON.stringify(evt))
+                //console.log((new Date()).toISOString(), '[INFO] Event Received: ' + JSON.stringify(evt))
                 datachannel = evt.channel
 
                 datachannel.onclose = onConnectionClosed
                 datachannel.onmessage = onMenssage
-                //console.log('[INFO] Channel Created by Listener')
+                //console.log((new Date()).toISOString(), '[INFO] Channel Created by Listener')
 
                 datachannel.onopen = () => {
-                    //console.log('[INFO] The data connection is open. Start the magic')
+                    //console.log((new Date()).toISOString(), '[INFO] The data connection is open. Start the magic')
                 }
             }
         }
@@ -246,8 +246,8 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         */
         function onMenssage(message) {
             if (callbackFunction === undefined) {
-                console.log('[WARN] Unexpected Message Received, noone was waiting for it. ')
-                console.log('[WARN] Message Received: ' + JSON.stringify(message))
+                console.log((new Date()).toISOString(), '[WARN] Unexpected Message Received, noone was waiting for it. ')
+                console.log((new Date()).toISOString(), '[WARN] Message Received: ' + JSON.stringify(message))
             } else {
 
                 switch (message.data) {
@@ -274,7 +274,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     default: {
                         switch (receivingMultipleMessages) {
                             case 'No': {
-                                //console.log('[INFO] Message Received: ' + JSON.stringify(message))
+                                //console.log((new Date()).toISOString(), '[INFO] Message Received: ' + JSON.stringify(message))
                                 callbackFunction(message.data)
                                 break
                             }
