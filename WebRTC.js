@@ -4,7 +4,9 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     This modules bring enables the communication between Test Clients and the Test Server.
     */
     let thisObject = {
+        userProfile: undefined,
         channelName: undefined,
+        clientInstanceName: undefined,
         sendMessage: sendMessage,
         sendFile: sendFile,
         sendResponse: sendResponse,
@@ -117,6 +119,12 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
         function onSignalingChannelMessage(msg) {
             try {
+                if (peerConnection !== undefined && peerConnection.signalingState === "stable") {
+                    /*
+                    Once we reach this state, we need to ignore further messages, since 2 instances connecting to the server simultaniously would crash it.
+                    */
+                    return
+                }
                 let signal = JSON.parse(msg.data)
 
                 if (signal.isChannelPresent == false) {
@@ -260,7 +268,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Listener')
 
                     datachannel.onopen = () => {
-                        console.log('Debug Log', (new Date()).toISOString(), '[INFO] The data connection is open. Start the magic')
+                        console.log((new Date()).toISOString(), 'WebRTC Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
                     }
                 }
             } catch (err) {
