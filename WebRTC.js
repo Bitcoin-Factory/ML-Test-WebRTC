@@ -38,6 +38,11 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         return new Promise(promiseWork)
 
         function promiseWork(resolve, reject) {
+            if (peerConnection !== undefined && peerConnection.signalingState === "stable") {
+                console.log((new Date()).toISOString(), 'WebRTC Your are not connected to the Test Server.')
+                return
+            }
+
             let gotResponse = false
             if (datachannel !== undefined) {
                 callbackFunction = onMenssageReceived
@@ -151,6 +156,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     console.log('Debug Log', "[INFO] Got a SDP answer from remote peer")
                     //Add remote peer configuration
                     peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
+                    console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
                 }
                 else if (signal.candidate) {
                     console.log('Debug Log', "[INFO] Received ICECandidate from remote peer.")
@@ -268,7 +274,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Listener')
 
                     datachannel.onopen = () => {
-                        console.log((new Date()).toISOString(), 'WebRTC Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                        console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
                     }
                 }
             } catch (err) {
