@@ -94,7 +94,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         When the connection is lost, a timeout happens, etc,
         this method will be executed.
         */
-        console.log((new Date()).toISOString(), 'WebRTC the connection.')
+        console.log((new Date()).toISOString(), 'WebRTC Resetting the connection.')
         thisObject.initialize(thisObject.channelName)
     }
 
