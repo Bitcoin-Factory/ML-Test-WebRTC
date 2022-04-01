@@ -114,41 +114,47 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         signalingChannel.channel = thisObject.channelName //channel like peer chat rooms
 
         signalingChannel.onmessage = (msg) => {
-            let signal = JSON.parse(msg.data)
 
-            if (signal.isChannelPresent == false) {
-                //new/empty channel. Create and wait for new peers
-                signalingChannel.push(JSON.stringify({
-                    open: true,
-                    channel: signalingChannel.channel
-                }))
-            } else if (signal.isChannelPresent == true) {
-                //Channel available. Present yourself
-                signalingChannel.push(JSON.stringify({
-                    open: true,
-                    channel: signalingChannel.channel
-                }))
-                setupOfferPeer() // create peer and make offer to others to connect
-            }
+            try {
+                let signal = JSON.parse(msg.data)
 
-            // We're getting an offer, so we answer to it
-            if (signal.sdpOffer) {
-                //console.log("[INFO] Got a SDP offer from remote peer")
-                setupAnswerPeer(signal.sdpOffer) //configure remote peer and create an answer offer
-            }
-            else if (signal.sdpAnswer) {
-                //console.log("[INFO] Got a SDP answer from remote peer")
-                //Add remote peer configuration
-                peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
-            }
-            else if (signal.candidate) {
-                //console.log("[INFO] Received ICECandidate from remote peer.")
-                //Add remote peer configuration options to try to connect
-                peerConnection.addIceCandidate(new wrtc.RTCIceCandidate(signal.candidate))
-            }
-            else if (signal.closeConnection) {
-                //console.log("[INFO] Received 'close' signal from remote peer.")
-                peerConnection.close()
+                if (signal.isChannelPresent == false) {
+                    //new/empty channel. Create and wait for new peers
+                    signalingChannel.push(JSON.stringify({
+                        open: true,
+                        channel: signalingChannel.channel
+                    }))
+                } else if (signal.isChannelPresent == true) {
+                    //Channel available. Present yourself
+                    signalingChannel.push(JSON.stringify({
+                        open: true,
+                        channel: signalingChannel.channel
+                    }))
+                    setupOfferPeer() // create peer and make offer to others to connect
+                }
+
+                // We're getting an offer, so we answer to it
+                if (signal.sdpOffer) {
+                    //console.log("[INFO] Got a SDP offer from remote peer")
+                    setupAnswerPeer(signal.sdpOffer) //configure remote peer and create an answer offer
+                }
+                else if (signal.sdpAnswer) {
+                    //console.log("[INFO] Got a SDP answer from remote peer")
+                    //Add remote peer configuration
+                    peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
+                }
+                else if (signal.candidate) {
+                    //console.log("[INFO] Received ICECandidate from remote peer.")
+                    //Add remote peer configuration options to try to connect
+                    peerConnection.addIceCandidate(new wrtc.RTCIceCandidate(signal.candidate))
+                }
+                else if (signal.closeConnection) {
+                    //console.log("[INFO] Received 'close' signal from remote peer.")
+                    peerConnection.close()
+                }
+            } catch (err) {
+                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error.')
+                thisObject.reset()
             }
         }
 
