@@ -112,9 +112,10 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         callbackFunction = undefined
 
         signalingChannel.channel = thisObject.channelName //channel like peer chat rooms
+        signalingChannel.onmessage = onSignalingChannelMessage
+        signalingChannel.onopen = onSignalingChannelOpen
 
-        signalingChannel.onmessage = (msg) => {
-
+        function onSignalingChannelMessage(msg) {
             try {
                 let signal = JSON.parse(msg.data)
 
@@ -153,165 +154,194 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     peerConnection.close()
                 }
             } catch (err) {
-                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error.')
+                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error @ onSignalingChannelMessage.')
+                console.log((new Date()).toISOString(), err.stack)
                 thisObject.reset()
             }
         }
 
-        // Open the signaling websocket connection and setup the messages with channel ID (network in SA)
-        signalingChannel.onopen = () => {
-            signalingChannel.push = signalingChannel.send
-            signalingChannel.send = (data) => {
+        function onSignalingChannelOpen() {
+            /*
+            Open the signaling websocket connection and setup the messages with channel ID  
+            */
+            try {
+                signalingChannel.push = signalingChannel.send
+                signalingChannel.send = (data) => {
+                    signalingChannel.push(JSON.stringify({
+                        data: data,
+                        channel: signalingChannel.channel
+                    }))
+                }
+                //Check if channel is open/available
                 signalingChannel.push(JSON.stringify({
-                    data: data,
+                    checkPresence: true,
                     channel: signalingChannel.channel
                 }))
+            } catch (err) {
+                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error @ onSignalingChannelMessage.')
+                console.log((new Date()).toISOString(), err.stack)
+                thisObject.reset()
             }
-            //Check if channel is open/available
-            signalingChannel.push(JSON.stringify({
-                checkPresence: true,
-                channel: signalingChannel.channel
-            }))
-
         }
 
-        // WebRTC Data Channel stuff     
         function setupOfferPeer() {
-            //Create a new peer
-            peerConnection = new wrtc.RTCPeerConnection(peerConnectionCfg)
+            try {
+                /*
+                WebRTC Data Channel stuff
+                */
+                //Create a new peer
+                peerConnection = new wrtc.RTCPeerConnection(peerConnectionCfg)
 
-            //Since we are initiating a connection, create the data channel
-            datachannel = peerConnection.createDataChannel(thisObject.channelName)
-
-            datachannel.onclose = onConnectionClosed
-            datachannel.onmessage = onMenssage
-            //console.log((new Date()).toISOString(), '[INFO] Channel Created by Initiator')
-
-            peerConnection.onicecandidate = (msg) => {
-                // send any ice candidates to the other peer, i.e., msg.candidate
-                //console.log((new Date()).toISOString(), '[INFO] Sending ICE candidates')
-                if (!msg || !msg.candidate) { return }
-                signalingChannel.send({
-                    candidate: msg.candidate
-                })
-            }
-            //Here we create the configuration parameters to present to anyone who wants to connect to us
-            //console.log((new Date()).toISOString(), '[INFO] creating offer')
-            peerConnection.createOffer((offer) => {
-                peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(offer), () => {
-                    // send the offer to a server to be forwarded to the other peer
-                    signalingChannel.send({
-                        sdpOffer: offer
-                    })
-                }, (error) => { console.log(error) })
-            }, (error) => { console.log(error) })
-        }
-
-        function setupAnswerPeer(offer) {
-            //Create a new peer
-            peerConnection = new wrtc.RTCPeerConnection(peerConnectionCfg)
-
-            peerConnection.onicecandidate = (msg) => {
-                // send any ice candidates to the other peer, i.e., msg.candidate
-                //console.log((new Date()).toISOString(), '[INFO] Sending ICE candidates')
-                if (!msg || !msg.candidate) { return }
-                signalingChannel.send({
-                    candidate: msg.candidate
-                })
-            }
-            //Since we have received an offer from a peer, we configure the new peer with that config...
-            peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(offer))
-            //console.log((new Date()).toISOString(), '[INFO] creating answer')
-            //.. And send our configuration to the offering peer
-            peerConnection.createAnswer((answer) => {
-                peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(answer), () => {
-                    // send the offer to a server to be forwarded to the other peer
-                    //console.log((new Date()).toISOString(), '[INFO] Sending Answer')
-                    signalingChannel.send({
-                        sdpAnswer: answer
-                    })
-                }, (error) => { console.log(error) })
-            }, (error) => { console.log(error) })
-
-            peerConnection.ondatachannel = evt => {
-                //console.log((new Date()).toISOString(), '[INFO] Event Received: ' + JSON.stringify(evt))
-                datachannel = evt.channel
+                //Since we are initiating a connection, create the data channel
+                datachannel = peerConnection.createDataChannel(thisObject.channelName)
 
                 datachannel.onclose = onConnectionClosed
                 datachannel.onmessage = onMenssage
-                //console.log((new Date()).toISOString(), '[INFO] Channel Created by Listener')
+                //console.log((new Date()).toISOString(), '[INFO] Channel Created by Initiator')
 
-                datachannel.onopen = () => {
-                    //console.log((new Date()).toISOString(), '[INFO] The data connection is open. Start the magic')
+                peerConnection.onicecandidate = (msg) => {
+                    // send any ice candidates to the other peer, i.e., msg.candidate
+                    //console.log((new Date()).toISOString(), '[INFO] Sending ICE candidates')
+                    if (!msg || !msg.candidate) { return }
+                    signalingChannel.send({
+                        candidate: msg.candidate
+                    })
                 }
+                //Here we create the configuration parameters to present to anyone who wants to connect to us
+                //console.log((new Date()).toISOString(), '[INFO] creating offer')
+                peerConnection.createOffer((offer) => {
+                    peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(offer), () => {
+                        // send the offer to a server to be forwarded to the other peer
+                        signalingChannel.send({
+                            sdpOffer: offer
+                        })
+                    }, (error) => { console.log(error) })
+                }, (error) => { console.log(error) })
+            } catch (err) {
+                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error @ setupOfferPeer.')
+                console.log((new Date()).toISOString(), err.stack)
+                thisObject.reset()
             }
         }
 
-        /*
-        This function is called when a message is received over a Data Channel.
-        */
-        function onMenssage(message) {
-            if (callbackFunction === undefined) {
-                console.log((new Date()).toISOString(), '[WARN] Unexpected Message Received, noone was waiting for it. ')
-                console.log((new Date()).toISOString(), '[WARN] Message Received: ' + JSON.stringify(message))
-            } else {
+        function setupAnswerPeer(offer) {
+            try {
+                //Create a new peer
+                peerConnection = new wrtc.RTCPeerConnection(peerConnectionCfg)
 
-                switch (message.data) {
-                    case 'SENDING MULTIPLE MESSAGES': {
-                        receivingMultipleMessages = 'Yes'
-                        break
+                peerConnection.onicecandidate = (msg) => {
+                    // send any ice candidates to the other peer, i.e., msg.candidate
+                    //console.log((new Date()).toISOString(), '[INFO] Sending ICE candidates')
+                    if (!msg || !msg.candidate) { return }
+                    signalingChannel.send({
+                        candidate: msg.candidate
+                    })
+                }
+                //Since we have received an offer from a peer, we configure the new peer with that config...
+                peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(offer))
+                //console.log((new Date()).toISOString(), '[INFO] creating answer')
+                //.. And send our configuration to the offering peer
+                peerConnection.createAnswer((answer) => {
+                    peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(answer), () => {
+                        // send the offer to a server to be forwarded to the other peer
+                        //console.log((new Date()).toISOString(), '[INFO] Sending Answer')
+                        signalingChannel.send({
+                            sdpAnswer: answer
+                        })
+                    }, (error) => { console.log(error) })
+                }, (error) => { console.log(error) })
+
+                peerConnection.ondatachannel = evt => {
+                    //console.log((new Date()).toISOString(), '[INFO] Event Received: ' + JSON.stringify(evt))
+                    datachannel = evt.channel
+
+                    datachannel.onclose = onConnectionClosed
+                    datachannel.onmessage = onMenssage
+                    //console.log((new Date()).toISOString(), '[INFO] Channel Created by Listener')
+
+                    datachannel.onopen = () => {
+                        //console.log((new Date()).toISOString(), '[INFO] The data connection is open. Start the magic')
                     }
-                    case 'MULTIPLE MESSAGES SENT': {
-                        receivingMultipleMessages = 'No'
-                        callbackFunction(multipleMessagesArray)
-                        multipleMessagesArray = []
-                        break
-                    }
-                    case 'SENDING FILE': {
-                        receivingFile = 'Starting'
-                        break
-                    }
-                    case 'FILE SENT': {
-                        receivingFile = 'No'
-                        multipleMessagesArray.push(fileBuffer)
-                        fileBuffer = undefined
-                        break
-                    }
-                    default: {
-                        switch (receivingMultipleMessages) {
-                            case 'No': {
-                                //console.log((new Date()).toISOString(), '[INFO] Message Received: ' + JSON.stringify(message))
-                                callbackFunction(message.data)
-                                break
-                            }
-                            case 'Yes': {
-                                switch (receivingFile) {
-                                    case 'No': {
-                                        multipleMessagesArray.push(message.data)
-                                        break
-                                    }
-                                    case 'Starting': {
-                                        fileBuffer = Buffer.from(message.data)
-                                        receivingFile = 'Yes'
-                                        break
-                                    }
-                                    case 'Yes': {
-                                        let data = Buffer.from(message.data)
-                                        fileBuffer = Buffer.concat([fileBuffer, data])
-                                        break
-                                    }
+                }
+            } catch (err) {
+                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error @ setupAnswerPeer.')
+                console.log((new Date()).toISOString(), err.stack)
+                thisObject.reset()
+            }
+        }
+
+        function onMenssage(message) {
+            try {
+                /*
+                This function is called when a message is received over a Data Channel.
+                */
+                if (callbackFunction === undefined) {
+                    console.log((new Date()).toISOString(), '[WARN] Unexpected Message Received, noone was waiting for it. ')
+                    console.log((new Date()).toISOString(), '[WARN] Message Received: ' + JSON.stringify(message))
+                } else {
+
+                    switch (message.data) {
+                        case 'SENDING MULTIPLE MESSAGES': {
+                            receivingMultipleMessages = 'Yes'
+                            break
+                        }
+                        case 'MULTIPLE MESSAGES SENT': {
+                            receivingMultipleMessages = 'No'
+                            callbackFunction(multipleMessagesArray)
+                            multipleMessagesArray = []
+                            break
+                        }
+                        case 'SENDING FILE': {
+                            receivingFile = 'Starting'
+                            break
+                        }
+                        case 'FILE SENT': {
+                            receivingFile = 'No'
+                            multipleMessagesArray.push(fileBuffer)
+                            fileBuffer = undefined
+                            break
+                        }
+                        default: {
+                            switch (receivingMultipleMessages) {
+                                case 'No': {
+                                    //console.log((new Date()).toISOString(), '[INFO] Message Received: ' + JSON.stringify(message))
+                                    callbackFunction(message.data)
+                                    break
                                 }
-                                break
+                                case 'Yes': {
+                                    switch (receivingFile) {
+                                        case 'No': {
+                                            multipleMessagesArray.push(message.data)
+                                            break
+                                        }
+                                        case 'Starting': {
+                                            fileBuffer = Buffer.from(message.data)
+                                            receivingFile = 'Yes'
+                                            break
+                                        }
+                                        case 'Yes': {
+                                            let data = Buffer.from(message.data)
+                                            fileBuffer = Buffer.concat([fileBuffer, data])
+                                            break
+                                        }
+                                    }
+                                    break
+                                }
                             }
                         }
                     }
                 }
+            } catch (err) {
+                console.log((new Date()).toISOString(), 'WebRTC reconvering from connection related error @ onMenssage.')
+                console.log((new Date()).toISOString(), err.stack)
+                thisObject.reset()
             }
         }
-        /*
-        Data Channel being Closed.
-        */
+
         function onConnectionClosed() {
+            /*
+            Data Channel being Closed.
+            */
             console.log((new Date()).toISOString(), 'WebRTC Connection Lost. Resetting Connection.')
             thisObject.reset()
         }
