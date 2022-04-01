@@ -128,7 +128,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     /*
                     Once we reach this state, we need to ignore further messages, since 2 instances connecting to the server simultaniously would crash it.
                     */
-                    return
+                    //return
                 }
                 let signal = JSON.parse(msg.data)
 
@@ -156,7 +156,9 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     // console.log('Debug Log', "[INFO] Got a SDP answer from remote peer")
                     //Add remote peer configuration
                     peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
-                    console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                    if (thisObject.userProfile === undefined) {
+                        console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                    }
                 }
                 else if (signal.candidate) {
                     // console.log('Debug Log', "[INFO] Received ICECandidate from remote peer.")
