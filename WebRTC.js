@@ -38,7 +38,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         return new Promise(promiseWork)
 
         function promiseWork(resolve, reject) {
-            if (peerConnection !== undefined && peerConnection.signalingState === "stable") {
+            if (peerConnection !== undefined && peerConnection.signalingState !== "stable") {
                 console.log((new Date()).toISOString(), 'WebRTC Your are not connected to the Test Server.')
                 return
             }
@@ -149,22 +149,22 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
                 // We're getting an offer, so we answer to it
                 if (signal.sdpOffer) {
-                    console.log('Debug Log', "[INFO] Got a SDP offer from remote peer")
+                    // console.log('Debug Log', "[INFO] Got a SDP offer from remote peer")
                     setupAnswerPeer(signal.sdpOffer) //configure remote peer and create an answer offer
                 }
                 else if (signal.sdpAnswer) {
-                    console.log('Debug Log', "[INFO] Got a SDP answer from remote peer")
+                    // console.log('Debug Log', "[INFO] Got a SDP answer from remote peer")
                     //Add remote peer configuration
                     peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
-                    console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                    console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
                 }
                 else if (signal.candidate) {
-                    console.log('Debug Log', "[INFO] Received ICECandidate from remote peer.")
+                    // console.log('Debug Log', "[INFO] Received ICECandidate from remote peer.")
                     //Add remote peer configuration options to try to connect
                     peerConnection.addIceCandidate(new wrtc.RTCIceCandidate(signal.candidate))
                 }
                 else if (signal.closeConnection) {
-                    console.log('Debug Log', "[INFO] Received 'close' signal from remote peer.")
+                    // console.log('Debug Log', "[INFO] Received 'close' signal from remote peer.")
                     peerConnection.close()
                 }
             } catch (err) {
@@ -211,18 +211,18 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
                 datachannel.onclose = onConnectionClosed
                 datachannel.onmessage = onMenssage
-                console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Initiator')
+                // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Initiator')
 
                 peerConnection.onicecandidate = (msg) => {
                     // send any ice candidates to the other peer, i.e., msg.candidate
-                    console.log('Debug Log', (new Date()).toISOString(), '[INFO] Sending ICE candidates')
+                    // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Sending ICE candidates')
                     if (!msg || !msg.candidate) { return }
                     signalingChannel.send({
                         candidate: msg.candidate
                     })
                 }
                 //Here we create the configuration parameters to present to anyone who wants to connect to us
-                console.log('Debug Log', (new Date()).toISOString(), '[INFO] creating offer')
+                // console.log('Debug Log', (new Date()).toISOString(), '[INFO] creating offer')
                 peerConnection.createOffer((offer) => {
                     peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(offer), () => {
                         // send the offer to a server to be forwarded to the other peer
@@ -245,7 +245,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
                 peerConnection.onicecandidate = (msg) => {
                     // send any ice candidates to the other peer, i.e., msg.candidate
-                    console.log('Debug Log', (new Date()).toISOString(), '[INFO] Sending ICE candidates')
+                    // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Sending ICE candidates')
                     if (!msg || !msg.candidate) { return }
                     signalingChannel.send({
                         candidate: msg.candidate
@@ -253,12 +253,12 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 }
                 //Since we have received an offer from a peer, we configure the new peer with that config...
                 peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(offer))
-                console.log('Debug Log', (new Date()).toISOString(), '[INFO] creating answer')
+                // console.log('Debug Log', (new Date()).toISOString(), '[INFO] creating answer')
                 //.. And send our configuration to the offering peer
                 peerConnection.createAnswer((answer) => {
                     peerConnection.setLocalDescription(new wrtc.RTCSessionDescription(answer), () => {
                         // send the offer to a server to be forwarded to the other peer
-                        console.log('Debug Log', (new Date()).toISOString(), '[INFO] Sending Answer')
+                        // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Sending Answer')
                         signalingChannel.send({
                             sdpAnswer: answer
                         })
@@ -266,12 +266,12 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 }, (error) => { console.log(error) })
 
                 peerConnection.ondatachannel = evt => {
-                    console.log('Debug Log', (new Date()).toISOString(), '[INFO] Event Received: ' + JSON.stringify(evt))
+                    // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Event Received: ' + JSON.stringify(evt))
                     datachannel = evt.channel
 
                     datachannel.onclose = onConnectionClosed
                     datachannel.onmessage = onMenssage
-                    console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Listener')
+                    // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Listener')
 
                     datachannel.onopen = () => {
                         console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
@@ -318,7 +318,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                         default: {
                             switch (receivingMultipleMessages) {
                                 case 'No': {
-                                    console.log('Debug Log', (new Date()).toISOString(), '[INFO] Message Received: ' + JSON.stringify(message))
+                                    // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Message Received: ' + JSON.stringify(message))
                                     callbackFunction(message.data)
                                     break
                                 }
