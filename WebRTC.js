@@ -48,7 +48,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         function sendPing() {
             let timestamp = (new Date()).valueOf()
             if (lastPingReceived === undefined) { lastPingReceived = timestamp }
-            if (timestamp - lastPingReceived > 60 * 1000) {
+            if (timestamp - lastPingReceived > 20 * 1000) {
                 thisObject.status = "Disconnected from Test Server"
                 console.log((new Date()).toISOString(), 'WebRTC has disconnected.')
                 clearInterval(pingIntervalId)
