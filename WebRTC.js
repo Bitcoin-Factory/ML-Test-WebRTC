@@ -59,7 +59,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
             if (datachannel !== undefined) {
                 datachannel.send('PING')
-                console.log((new Date()).toISOString(), 'WebRTC PING')
+                // console.log((new Date()).toISOString(), 'WebRTC PING')
             } else {
                 console.log((new Date()).toISOString(), 'WebRTC Pinging Stopped because Data Channel is undefined.')
                 clearInterval(pingIntervalId)
@@ -167,8 +167,6 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     /*
                     Once we reach this state, we need to ignore further messages, since 2 instances connecting to the server simultaniously would crash it.
                     */
-                    console.log((new Date()).toISOString(), 'WebRTC CAUTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.')
-
                     return
                 }
                 let signal = JSON.parse(msg.data)
@@ -358,7 +356,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 */
                 if (message.data === 'PING') {
                     lastPingReceived = (new Date()).valueOf()
-                    console.log((new Date()).toISOString(), 'WebRTC PING RECEIVED.')
+                    // console.log((new Date()).toISOString(), 'WebRTC PING RECEIVED.')
                     return
                 }
 
