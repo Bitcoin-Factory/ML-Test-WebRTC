@@ -4,6 +4,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     This modules bring enables the communication between Test Clients and the Test Server.
     */
     let thisObject = {
+        runningAtTestServer: undefined,
         userProfile: undefined,
         channelName: undefined,
         clientInstanceName: undefined,
@@ -156,8 +157,15 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     // console.log('Debug Log', "[INFO] Got a SDP answer from remote peer")
                     //Add remote peer configuration
                     peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(signal.sdpAnswer))
-                    if (thisObject.userProfile === undefined) {
-                        console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                    switch (thisObject.runningAtTestServer) {
+                        case false: {
+                            console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                            break
+                        }
+                        case true: {
+                            console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                            break
+                        }
                     }
                 }
                 else if (signal.candidate) {
@@ -276,7 +284,16 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     // console.log('Debug Log', (new Date()).toISOString(), '[INFO] Channel Created by Listener')
 
                     datachannel.onopen = () => {
-                        console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                        switch (thisObject.runningAtTestServer) {
+                            case false: {
+                                console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                                break
+                            }
+                            case true: {
+                                console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                                break
+                            }
+                        }
                     }
                 }
             } catch (err) {
