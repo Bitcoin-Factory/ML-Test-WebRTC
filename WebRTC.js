@@ -67,7 +67,12 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             }
 
             if (datachannel !== undefined) {
-                datachannel.send('PING')
+                try {
+                    datachannel.send('PING')
+                } catch(err) {
+                    // Sometimes this could fail if the pings is sent while the channel is not ready for some reason.
+                }
+                
                 // console.log((new Date()).toISOString(), 'WebRTC PING')
             } else {
                 console.log((new Date()).toISOString(), 'WebRTC Pinging Stopped because Data Channel is undefined.')
