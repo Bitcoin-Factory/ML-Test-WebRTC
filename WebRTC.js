@@ -50,7 +50,6 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             if (lastPingReceived === undefined) { lastPingReceived = timestamp }
             if (timestamp - lastPingReceived > 20 * 1000) {
                 thisObject.status = "Disconnected"
-                console.log((new Date()).toISOString(), 'WebRTC has disconnected.')
                 switch (thisObject.runningAtTestServer) {
                     case false: {
                         console.log((new Date()).toISOString(), 'WebRTC Client Disconnected from the Test Server.')
