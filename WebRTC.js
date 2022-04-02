@@ -159,10 +159,15 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
 
         function onSignalingChannelMessage(msg) {
             try {
-                if (peerConnection !== undefined && peerConnection.signalingState === "stable") {
+                if (
+                    thisObject.status === "Connected to Test Server" ||
+                    thisObject.status === "Connected to Client Instance"
+                ) {
                     /*
                     Once we reach this state, we need to ignore further messages, since 2 instances connecting to the server simultaniously would crash it.
                     */
+                    console.log((new Date()).toISOString(), 'WebRTC CAUTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.')
+
                     //return
                 }
                 let signal = JSON.parse(msg.data)
@@ -332,6 +337,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                             case true: {
                                 console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
                                 thisObject.status = "Connected to Client Instance"
+                                startPinging()
                                 break
                             }
                         }
