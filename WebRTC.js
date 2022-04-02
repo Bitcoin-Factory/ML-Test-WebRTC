@@ -76,6 +76,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
             if (thisObject.status !== "Connected to Test Server") {
                 console.log((new Date()).toISOString(), 'WebRTC is not connected to the Test Server.')
                 reject('Not Connected to Test Server')
+                thisObject.reset()
                 return
             }
 
