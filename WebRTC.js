@@ -5,6 +5,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     */
     let thisObject = {
         runningAtTestServer: undefined,
+        status: undefined,
         userProfile: undefined,
         channelName: undefined,
         clientInstanceName: undefined,
@@ -29,18 +30,52 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
     let receivingMultipleMessages
     let multipleMessagesArray
     let callbackFunction
+    let pingIntervalId
+    let lastPingReceived
 
     return thisObject
 
     function finalize() {
     }
 
+    function startPinging() {
+        if (pingIntervalId !== undefined) {
+            clearInterval(pingIntervalId)
+        }
+        console.log((new Date()).toISOString(), 'WebRTC Start PINGING')
+        pingIntervalId = setInterval(sendPing, 5 * 1000)
+
+        function sendPing() {
+            let timestamp = (new Date()).valueOf()
+            if (lastPingReceived === undefined) { lastPingReceived = timestamp }
+            if (timestamp - lastPingReceived > 60 * 1000) {
+                thisObject.status = "Disconnected from Test Server"
+                console.log((new Date()).toISOString(), 'WebRTC has disconnected from Test Server.')
+                clearInterval(pingIntervalId)
+                pingIntervalId = undefined
+                lastPingReceived = undefined
+                return
+            }
+
+            if (datachannel !== undefined) {
+                datachannel.send('PING')
+                console.log((new Date()).toISOString(), 'WebRTC PING')
+            } else {
+                console.log((new Date()).toISOString(), 'WebRTC Pinging Stopped because Data Channel is undefined.')
+                clearInterval(pingIntervalId)
+                pingIntervalId = undefined
+                lastPingReceived = undefined
+            }
+        }
+    }
+
     function sendMessage(message) {
         return new Promise(promiseWork)
 
         function promiseWork(resolve, reject) {
-            if (peerConnection !== undefined && peerConnection.signalingState !== "stable") {
-                console.log((new Date()).toISOString(), 'WebRTC Your are not connected to the Test Server.')
+            if (thisObject.status !== "Connected to Test Server") {
+                console.log((new Date()).toISOString(), 'WebRTC is not connected to the Test Server.')
+                reject('Not Connected to Test Server')
                 return
             }
 
@@ -106,7 +141,6 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
         thisObject.initialize(thisObject.channelName)
     }
 
-
     function initialize(channelName) {
 
         thisObject.channelName = channelName
@@ -160,10 +194,14 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     switch (thisObject.runningAtTestServer) {
                         case false: {
                             console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                            thisObject.status = "Connected to Test Server"
+                            startPinging()
                             break
                         }
                         case true: {
                             console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                            thisObject.status = "Connected to Client Instance"
+                            startPinging()
                             break
                         }
                     }
@@ -287,10 +325,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                         switch (thisObject.runningAtTestServer) {
                             case false: {
                                 console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
+                                thisObject.status = "Connected to Test Server"
+                                startPinging()
                                 break
                             }
                             case true: {
                                 console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
+                                thisObject.status = "Connected to Client Instance"
                                 break
                             }
                         }
@@ -308,6 +349,12 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                 /*
                 This function is called when a message is received over a Data Channel.
                 */
+                if (message.data === 'PING') {
+                    lastPingReceived = (new Date()).valueOf()
+                    console.log((new Date()).toISOString(), 'WebRTC PING RECEIVED.')
+                    return
+                }
+
                 if (callbackFunction === undefined) {
                     console.log((new Date()).toISOString(), '[WARN] Unexpected Message Received, noone was waiting for it. ')
                     console.log((new Date()).toISOString(), '[WARN] Message Received: ' + JSON.stringify(message))
