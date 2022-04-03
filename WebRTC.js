@@ -181,7 +181,7 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                     /*
                     Once we reach this state, we need to ignore further messages, since 2 instances connecting to the server simultaniously would crash it.
                     */
-                    return
+                    //return
                 }
                 let signal = JSON.parse(msg.data)
 
@@ -213,13 +213,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                         case false: {
                             console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
                             thisObject.status = "Connected to Test Server"
-                            startPinging()
+                            //startPinging()
                             break
                         }
                         case true: {
                             console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
                             thisObject.status = "Connected to Client Instance"
-                            startPinging()
+                            //startPinging()
                             break
                         }
                     }
@@ -344,13 +344,13 @@ exports.newMachineLearningWebRTC = function newMachineLearningWebRTC() {
                             case false: {
                                 console.log((new Date()).toISOString(), 'WebRTC Client Succesfully Connected to the Test Server.')
                                 thisObject.status = "Connected to Test Server"
-                                startPinging()
+                                //startPinging()
                                 break
                             }
                             case true: {
                                 console.log((new Date()).toISOString(), 'WebRTC Server Succesfully Connected to ' + thisObject.userProfile + ' / ' + thisObject.clientInstanceName + ' .')
                                 thisObject.status = "Connected to Client Instance"
-                                startPinging()
+                                //startPinging()
                                 break
                             }
                         }
